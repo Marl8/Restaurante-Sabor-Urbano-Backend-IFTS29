@@ -12,6 +12,7 @@ import UserRoutes from './routes/UserRoutes.js';
 import { connectDB } from './data/MongoConnection.js';
 import WebRiderRoutes from './routes/WebRiderRoutes.js';
 import WebSupplyRoutes from './routes/WebSupplyRoutes.js';
+import WebMenuItemsRoutes from './routes/WebMenuItemsRoutes.js';
 
 dotenv.config();
 const app = express();
@@ -38,6 +39,7 @@ app.use('/', WebCustomerRoutes);
 app.use('/delivery', WebDeliveryRoutes); 
 app.use('/riders', WebRiderRoutes);
 app.use('/supplies', WebSupplyRoutes);
+app.use('/menuItems', WebMenuItemsRoutes);
 
 app.listen(PORT, ()=>{
     connectDB();

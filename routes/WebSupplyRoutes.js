@@ -3,18 +3,13 @@ import SupplyWebController from "../controllers/SupplyWebController.js";
 const router = express.Router();
 
 
-
-
 router.get("/", SupplyWebController.showSupplyMenu); 
+router.post("/save", SupplyWebController.saveSupplyWeb);
 router.get("/add", SupplyWebController.showAddSupplyForm);
 router.get("/list", SupplyWebController.listSuppliesWeb);
+router.get("/update", SupplyWebController.showSupplyToEdit); 
+router.post("/update/:id", SupplyWebController.updateSupplyWeb);
 router.get("/delete", SupplyWebController.showSupplyToDelete);
-/*router.get("/update", DeliveryWebController.showDeliveryToEdit); 
-
-router.post("/save", DeliveryWebController.saveDeliveryWeb);
-router.post("/add/findCustomer", DeliveryWebController.findCustomerByDni);
-router.post("/update/:id", DeliveryWebController.updateDeliveryWeb);
-
-router.delete("/delete/:id", DeliveryWebController.deleteDeliveryWeb);*/
+router.delete("/delete/:id", SupplyWebController.deleteSupplyWeb); 
 
 export default router;

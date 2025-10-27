@@ -1,0 +1,22 @@
+extends ../layout
+
+block content
+  h2.mb-5.text-center Gestión de Menú
+
+  a.btn.btn-secondary.mb-3.ms-2(href="/") ← Volver al Menú
+
+  if query.success
+    script.
+      if ('!{query.success}' === 'eliminado') {
+          alert('¡Pedido eliminado con éxito!');
+      } else {
+          alert('¡Pedido creado con éxito!');
+      }
+  if query.error
+    .alert.alert-danger Error: !{query.error}
+
+  .d-flex.flex-column.align-items-center.g-3
+    a.btn.mb-3.w-50(style="background-color:#343a40; color:white; border:none;", href= "/menuItems/add") ➕ Agregar Item del Menú
+    a.btn.mb-3.w-50(style="background-color:#343a40; color:white; border:none;", href= "/menuItems/list") 📋 Listar Items    
+    a.btn.mb-3.w-50(style="background-color:#343a40; color:white; border:none;", href= "/menuItems/list?action=edit") ✏️ Editar Item
+    a.btn.mb-3.w-50(style="background-color:#343a40; color:white; border:none;", href= "/menuItems/list?action=delete") 🗑 Eliminar Item

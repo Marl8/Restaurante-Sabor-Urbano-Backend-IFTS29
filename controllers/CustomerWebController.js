@@ -6,7 +6,7 @@ const saveCustomerWeb = async (req, res) => {
     try {
         const newCustomer = await CustomerService.saveCustomerData(req.body);
         
-        const successMessage = `Cliente ${newCustomer.customerId} guardado con éxito`;
+        const successMessage = `Cliente ${newCustomer._id} guardado con éxito`;
         
         res.redirect(`/customers?success=${encodeURIComponent(successMessage)}`);
     } catch (err) {

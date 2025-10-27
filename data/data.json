@@ -19,14 +19,14 @@
       "name": "ensalada mixta",
       "price": 3000,
       "category": "minuta",
-      "stock": 34
+      "stock": 33
     },
     {
       "id": 4,
       "name": "papas fritas",
       "price": 3500,
       "category": "minuta",
-      "stock": 50
+      "stock": 49
     },
     {
       "id": 5,

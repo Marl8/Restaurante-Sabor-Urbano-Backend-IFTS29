@@ -1,0 +1,54 @@
+extends ../layout
+
+block content
+  .container.mt-5
+    h2.text-center.mb-4 Listado de Ítems del Menú
+
+    a.btn.btn-secondary.mb-4(href="/menuItems") ← Volver al Menú
+
+    if query.success
+      .alert.alert-success.text-center.mt-3 #{query.success}
+    if query.error
+      .alert.alert-danger.text-center.mt-3 #{query.error}
+
+    if menuItems && menuItems.length
+      table.table.table-striped.table-hover.shadow-sm
+        thead.table-dark
+          tr
+            th(scope="col") #
+            th(scope="col") Nombre
+            th(scope="col") Precio ($)
+            th(scope="col") Categoría
+            th(scope="col") Stock
+            th(scope="col") Suministros 
+            th(scope="col") Acciones
+        tbody
+          each item, index in menuItems
+            tr
+              td #{index + 1}
+              td #{item.name}
+              td $#{item.price.toFixed(2)}
+              td #{item.category}
+              td #{item.stock}
+              td
+                if item.supplies && item.supplies.length
+                  ul.mb-0
+                    each s in item.supplies
+                      li #{s.name}
+                else
+                  span.text-muted Sin suministros
+              if !action
+                td
+                    a.btn.btn-sm.btn(style="background-color:#343a40; color:white; border:none;", href=`/menuItems/update?id=${item._id}`) ✏️
+                    a.btn.btn-sm.btn-danger.ms-2(href=`/menuItems/delete?id=${item._id}`) 🗑️
+              else if action === "edit"
+                td
+                  a.btn.btn-sm.btn-outline-primary(href=`/menuItems/update?id=${item._id}`) ✏️ Editar
+              else if action === "delete"
+                td
+                  a.btn.btn-sm.btn-outline-danger(href=`/menuItems/delete?id=${item._id}`) 🗑 Eliminar
+    else
+      .alert.alert-info.text-center.mt-4
+        | No hay ítems cargados en el menú aún.
+        br
+        a.btn.btn-sm.btn-dark.mt-2(href="/menuItems/add") ➕ Agregar nuevo ítem

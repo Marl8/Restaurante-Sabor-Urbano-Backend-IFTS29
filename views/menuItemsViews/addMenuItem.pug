@@ -1,0 +1,40 @@
+extends ../layout
+
+block content
+  .container.mt-5
+    h2.mb-4.text-center Agregar Ítem al Menú
+
+    a.btn.btn-secondary.mb-4(href="/menuItems") ← Volver al Menú de Ítems
+
+    if error
+      .alert.alert-danger.text-center #{error}
+
+    form(action="/menuItems/save" method="POST")
+      .mb-3
+        label.form-label(for="name") Nombre del Ítem
+        input.form-control(type="text" id="name" name="name" required value=oldData.name)
+
+      .mb-3
+        label.form-label(for="price") Precio ($)
+        input.form-control(type="number" id="price" name="price" step="0.01" min="0" required value=oldData.price)
+
+      .mb-3
+        label.form-label(for="category") Categoría
+        input.form-control(type="text" id="category" name="category" required value=oldData.category)
+
+      .mb-3
+        label.form-label(for="stock") Stock inicial
+        input.form-control(type="number" id="stock" name="stock" min="0" required value=oldData.stock)
+
+      .mb-3
+        label.form-label(for="supplies") Suministros requeridos
+        if supplies.length
+          select.form-select(name="supplies" id="supplies" multiple required)
+            each supply in supplies
+              option(value=supply._id selected=(oldData.supplies && oldData.supplies.includes(supply._id.toString()))) #{supply.name}
+          small.text-muted.mt-1(style="display:block") * Podés seleccionar varios suministros con Ctrl o Shift
+        else
+          p.text-muted No hay suministros cargados aún.
+
+      .text-center.mt-4
+        button.btn.btn-dark(type="submit") 💾 Guardar Ítem

@@ -1,0 +1,40 @@
+extends ../layout
+
+block content
+  .container.mt-5
+    h2.text-center.mb-4 Eliminar Ítem del Menú
+
+    a.btn.btn-secondary.mb-4(href="/menuItems") ← Volver al Menú
+
+    if error
+      .alert.alert-danger.text-center #{error}
+
+    if !menuItem
+      .alert.alert-warning.text-center No se encontró el ítem a eliminar.
+    else
+      .card.fluid.shadow.p-4.text-center
+        h4.mb-3.text-danger ¿Estás seguro de que querés eliminar este ítem?
+        p.mb-2
+          strong Nombre: 
+          | #{menuItem.name}
+        p.mb-2
+          strong Precio: 
+          | $#{menuItem.price}
+        p.mb-2
+          strong Categoría: 
+          | #{menuItem.category}
+        p.mb-2
+          strong Stock: 
+          | #{menuItem.stock}
+
+        if menuItem.supplies && menuItem.supplies.length
+          p.mt-3
+            strong Suministros asociados:
+          ul.list-group.list-group-flush.mb-3
+            each s in menuItem.supplies
+              li.list-group-item #{s.name}
+        else
+          p.text-muted.mt-3 (Sin suministros asociados)
+
+        form(action=`/menuItems/delete/${menuItem._id}` method="POST")
+          button.btn.btn-danger.w-50.mt-3(type="submit") 🗑 Eliminar definitivamente

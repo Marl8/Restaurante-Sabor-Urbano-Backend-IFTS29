@@ -1,0 +1,44 @@
+extends ../layout
+
+block content
+  .container.mt-5
+    h2.text-center.mb-4 Editar Ítem del Menú
+
+    a.btn.btn-secondary.mb-4(href="/menuItems") ← Volver al Menú
+
+    if error
+      .alert.alert-danger.text-center #{error}
+
+    if !menuItem
+      .alert.alert-warning.text-center No se encontró el ítem a editar.
+    else
+      form(action=`/menuItems/update/${menuItem._id}` method="POST")
+        .mb-3
+          label.form-label(for="name") Nombre del Ítem
+          input.form-control(type="text" id="name" name="name" required value=menuItem.name)
+
+        .mb-3
+          label.form-label(for="price") Precio ($)
+          input.form-control(type="number" id="price" name="price" step="0.01" min="0" required value=menuItem.price)
+
+        .mb-3
+          label.form-label(for="category") Categoría
+          input.form-control(type="text" id="category" name="category" required value=menuItem.category)
+
+        .mb-3
+          label.form-label(for="stock") Stock disponible
+          input.form-control(type="number" id="stock" name="stock" min="0" required value=menuItem.stock)
+
+        .mb-3
+          label.form-label(for="supplies") Suministros asociados
+          if supplies.length
+            select.form-select(name="supplies" id="supplies" multiple)
+              each supply in supplies
+                - const isSelected = menuItem.supplies && menuItem.supplies.some(s => s._id.toString() === supply._id.toString());
+                option(value=supply._id selected=isSelected)= supply.name
+            small.text-muted.mt-1(style="display:block") * Usá Ctrl o Shift para seleccionar varios.
+          else
+            p.text-muted No hay suministros cargados aún.
+
+        .text-center.mt-4
+          button.btn.w-50(style="background-color:#343a40; color:white; border:none;", type="submit") 💾 Guardar Cambios
