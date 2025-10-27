@@ -16,7 +16,15 @@ block content
     .alert.alert-danger Error: !{query.error}
 
   .d-flex.flex-column.align-items-center.g-3
-    a.btn.mb-3.w-50(style="background-color:#343a40; color:white; border:none;", href= "/delivery/add") ➕ Agregar Pedido
-    a.btn.mb-3.w-50(style="background-color:#343a40; color:white; border:none;", href= "/delivery/list") 📋 Listar Pedidos    
-    a.btn.mb-3.w-50(style="background-color:#343a40; color:white; border:none;", href= "/delivery/list?action=edit") ✏️ Editar Pedido
-    a.btn.mb-3.w-50(style="background-color:#343a40; color:white; border:none;", href= "/delivery/list?action=delete") 🗑 Eliminar Pedido
+    a.btn.btn-crud.mb-3.w-50(href= "/delivery/add")
+      i.bi.bi-plus-lg
+      | Agregar Pedido
+    a.btn.btn-crud.mb-3.w-50(href= "/delivery/list")
+      i.bi.bi-clipboard-data
+      | Listar Pedido
+    a.btn.btn-crud.mb-3.w-50(href= "/delivery/list?action=edit") 
+      i.bi.bi-pencil-fill
+      | Editar Pedido
+    a.btn.btn-crud.mb-3.w-50(href= "/delivery/list?action=delete")
+      i.bi.bi-trash
+      | Eliminar Pedido

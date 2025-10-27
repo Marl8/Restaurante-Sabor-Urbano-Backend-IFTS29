@@ -16,7 +16,15 @@ block content
     .alert.alert-danger Error: !{query.error}
 
   .d-flex.flex-column.align-items-center.g-3
-    a.btn.mb-3.w-50(style="background-color:#343a40; color:white; border:none;", href="/supplies/add") ➕ Agregar Insumo
-    a.btn.mb-3.w-50(style="background-color:#343a40; color:white; border:none;", href="/supplies/list") 📋 Listar Insumos
-    a.btn.mb-3.w-50(style="background-color:#343a40; color:white; border:none;", href="/supplies/list?action=edit") ✏️ Editar Insumo
-    a.btn.mb-3.w-50(style="background-color:#343a40; color:white; border:none;", href="/supplies/list?action=delete") 🗑 Eliminar Insumo
+    a.btn.btn-crud.mb-3.w-50(href="/supplies/add")
+      i.bi.bi-plus-lg
+      | Agregar Insumo
+    a.btn.btn-crud.mb-3.w-50(href="/supplies/list")
+      i.bi.bi-clipboard-data
+      | Listar Insumos
+    a.btn.btn-crud.mb-3.w-50(href="/supplies/list?action=edit") 
+      i.bi.bi-pencil-fill
+      | Editar Insumo
+    a.btn.btn-crud.mb-3.w-50(href="/supplies/list?action=delete")
+      i.bi.bi-trash
+      | Eliminar Insumo

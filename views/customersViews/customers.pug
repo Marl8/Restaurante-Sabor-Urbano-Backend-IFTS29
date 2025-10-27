@@ -14,14 +14,15 @@ block content
         .alert.alert-danger Error: !{query.error}
 
     .d-flex.flex-column.align-items-center.g-3
-        a.btn.mb-3.w-50(style="background-color:#343a40; color:white; border:none;", href= "/customers/add") ➕ Agregar Cliente
-        a.btn.mb-3.w-50(style="background-color:#343a40; color:white; border:none;", href= "/customers/list") 📋 Listar Clientes
-        a.btn.mb-3.w-50(style="background-color:#343a40; color:white; border:none;", href= "/customers/update") ✏️ Editar Cliente
-        a.btn.mb-3.w-50(style="background-color:#343a40; color:white; border:none;", href= "/customers/delete") 🗑 Eliminar Cliente
-
-    style.
-        a.btn:hover {
-            opacity: 0.85;
-            transform: scale(1.02);
-            transition: all 0.2s;
-        }
+        a.btn.btn-crud.mb-3.w-50(href= "/customers/add")
+            i.bi.bi-plus-lg
+            | Agregar Cliente
+        a.btn.btn-crud.mb-3.w-50(href= "/customers/list")
+            i.bi.bi-clipboard-data
+            | Listar Cliente
+        a.btn.btn-crud.mb-3.w-50(href= "/customers/update")  
+            i.bi.bi-pencil-fill
+            | Editar Cliente
+        a.btn.btn-crud.mb-3.w-50(href= "/customers/delete")
+            i.bi.bi-trash
+            | Eliminar Cliente

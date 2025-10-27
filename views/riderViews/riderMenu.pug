@@ -16,7 +16,15 @@ block content
     .alert.alert-danger Error: !{query.error}
 
   .d-flex.flex-column.align-items-center.g-3
-    a.btn.mb-3.w-50(style="background-color:#343a40; color:white; border:none;", href="/riders/add") ➕ Agregar Repartidor
-    a.btn.mb-3.w-50(style="background-color:#343a40; color:white; border:none;", href="/riders/list") 📋 Listar Repartidores
-    a.btn.mb-3.w-50(style="background-color:#343a40; color:white; border:none;", href="/riders/list?action=edit") ✏️ Editar Repartidor
-    a.btn.mb-3.w-50(style="background-color:#343a40; color:white; border:none;", href="/riders/list?action=delete") 🗑 Eliminar Repartidor
+    a.btn.btn-crud.mb-3.w-50(href="/riders/add")
+      i.bi.bi-plus-lg
+      | Agregar Repartidor
+    a.btn.btn-crud.mb-3.w-50(href="/riders/list")
+      i.bi.bi-clipboard-data
+      | Listar Repartidores
+    a.btn.btn-crud.mb-3.w-50(href="/riders/list?action=edit") 
+      i.bi.bi-pencil-fill
+      | Editar Repartidor
+    a.btn.btn-crud.mb-3.w-50(href="/riders/list?action=delete")
+      i.bi.bi-trash
+      | Eliminar Repartidor
