@@ -1,7 +1,13 @@
 import express from 'express';
+import { requireLogin } from "../middlewares/AuthWeb.js";
 const router = express.Router();
+
 import { findData } from '../data/db.js';
 import CustomerWebController from '../controllers/CustomerWebController.js';
+
+
+// Proteger TODAS las rutas de customers:
+router.use(requireLogin);
 
 
 router.get('/', (req, res) => {

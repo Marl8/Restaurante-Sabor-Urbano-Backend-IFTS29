@@ -13,6 +13,9 @@ import { connectDB } from './data/MongoConnection.js';
 import WebRiderRoutes from './routes/WebRiderRoutes.js';
 import WebSupplyRoutes from './routes/WebSupplyRoutes.js';
 import WebMenuItemsRoutes from './routes/WebMenuItemsRoutes.js';
+import UserWebRoutes from "./routes/WebUserRoutes.js";
+import session from "express-session";
+//import MongoStore from "connect-mongo";
 
 dotenv.config();
 const app = express();
@@ -22,6 +25,22 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true}));
 
 app.use(methodOverride('_method'));
+
+
+
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET || "supersecreto",
+    resave: false,
+    saveUninitialized: false,
+  })
+);
+
+// Middleware para hacer disponible el usuario en las vistas PUG
+app.use((req, res, next) => {
+  res.locals.user = req.session.user || null;
+  next();
+});
 
 app.set('view engine', 'pug');
 app.set('views', './views');
@@ -35,7 +54,10 @@ app.use('/api/rider', RiderRoutes);
 app.use('/api/user', UserRoutes);
 
 //Rutas Web
-app.use('/', WebCustomerRoutes);       
+
+app.use('/', UserWebRoutes); 
+app.use('/', WebCustomerRoutes); 
+      
 app.use('/delivery', WebDeliveryRoutes); 
 app.use('/riders', WebRiderRoutes);
 app.use('/supplies', WebSupplyRoutes);
