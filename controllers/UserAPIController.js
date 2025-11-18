@@ -86,7 +86,7 @@ const loginAPI = async (req, res)=>{
     try {       
         const result = await UserService.loginUser(req.body);
         if(result.islogin) {
-            res.status(200).json( {message: 'Login exitoso', user: result.user});
+            res.status(200).json( {message: 'Login exitoso', token: result.token, role: result.role});
         }
     } catch (error) {
         res.status(400).json({message: error.message});

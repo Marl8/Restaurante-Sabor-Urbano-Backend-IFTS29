@@ -1,5 +1,8 @@
 import bcrypt from 'bcrypt'; 
 import User from '../models/User.js';
+import jwt from "jsonwebtoken";
+import dotenv from "dotenv";
+dotenv.config();
 
 const saveUser = async({name, dni, email, username, password, rol})=>{
     try {
@@ -121,9 +124,35 @@ const loginUser = async ({username, password}) => {
         if (!isMatch) {
         throw new Error('Contraseña incorrecta');
         }
+        const token = jwt.sign({ 
+            id: user._id,
+            role: user.rol 
+            }, 
+            process.env.JWT_SECRET, 
+            {expiresIn: "1h"});
+
+        return {islogin: true, token: token, role: user.rol};
+    } catch (error) {
+        throw new Error(error.message);
+    }
+};
+
+const loginUserWEB = async ({username, password}) => {
+    try {
+        if (!username || !password) {
+        throw new Error('Faltan datos: username y password son obligatorios');
+        }
+        const user = await User.findOne({ username });
+        if (!user) {
+        throw new Error('Usuario no encontrado');
+        }
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+        throw new Error('Contraseña incorrecta');
+        }
         const userDto = user.toObject();
         delete userDto.password;
-        return {islogin: true, user: userDto};
+        return {islogin: true, user:userDto};
     } catch (error) {
         throw new Error(error.message);
     }
@@ -148,7 +177,8 @@ const UserService = {
     findUserByDni,
     updateUser,
     deleteUser,
-    loginUser
+    loginUser,
+    loginUserWEB
 };
 
 export default UserService;

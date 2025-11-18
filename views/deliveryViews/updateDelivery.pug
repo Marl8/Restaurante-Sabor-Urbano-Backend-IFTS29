@@ -8,6 +8,7 @@ block content
     if error
         p.text-danger.mt-2 #{error}
 
+    // Form para buscar el pedido por ID
     form(method="get" action="/delivery/update")
         .mb-3.d-flex.flex-column
             label.form-label(for="id") Ingresa el ID del pedido a editar
@@ -16,13 +17,13 @@ block content
 
     if delivery
         hr
-        h3.mb-3 Pedido ID: #{delivery.id}
+        h3.mb-3 Pedido ID: #{delivery._id}
         
-        form(method="post" action=`/delivery/update/${delivery.id}`)
+        form(method="post" action=`/delivery/update/${delivery._id}`)
             
             .mb-3
-                label.form-label Cliente ID
-                input.form-control(type="text", value=delivery.customerId || 'N/A', readonly)
+                label.form-label Cliente
+                input.form-control(type="text", value=delivery.customerId ? delivery.customerId.name : 'N/A', readonly)
 
             .mb-3
                 label.form-label(for="estado") Estado
@@ -30,19 +31,21 @@ block content
                     option(value="preparing" selected=delivery.status === 'preparing') Preparando
                     option(value="dispatched" selected=delivery.status === 'dispatched') Despachado
                     option(value="delivered" selected=delivery.status === 'delivered') Entregado
-            
             .mb-3
                 label.form-label Ítems (Solo lectura)
-                textarea.form-control(rows="3", readonly)= JSON.stringify(delivery.items)
+                textarea.form-control(rows="5", readonly)= JSON.stringify(delivery.items, null, 2)
             
             .mb-3
                 label.form-label(for="total") Total ($)
-                input.form-control(type="number", name="total", id="total", value=delivery.total)
-
+                input.form-control(type="number", name="total", id="total", value=delivery.total, disabled)
+            
             .mb-3
-                label.form-label(for="repartidor") ID Repartidor Asignado
-                input.form-control(type="text", name="repartidor", id="repartidor", value=delivery.assignedRiderId || '')
-
+                label.form-label(for="repartidor") Repartidor asignado
+                select.form-select(name="repartidor" id="repartidor")
+                    option(value="" selected=!delivery.assignedRiderId) -- Sin asignar --
+                    each rider in riders
+                        option(value=rider._id selected=(delivery.assignedRiderId && delivery.assignedRiderId._id.toString() === rider._id.toString())) #{rider.name} (#{rider.vehicle})
+            
             button.btn.btn-success(type="submit") Guardar Cambios
             a.btn.btn-secondary.ms-2(href="/delivery") Cancelar
 

@@ -1,0 +1,14 @@
+extends ../layout
+
+block content
+  .container.mt-5
+    .row.justify-content-center
+      .col-md-6
+        .card.card-login.shadow
+          .card-body.text-center
+            h4.text-danger Acceso denegado
+            p.mt-3 No tienes permisos para acceder a esta sección.
+            if user
+              p.mt-3 Usuario logueado: 
+                strong #{user.username} (#{user.rol})
+            a.btn.btn-dark.mt-4(href="/") Volver al inicio
