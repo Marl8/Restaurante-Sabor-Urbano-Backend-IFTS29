@@ -1,29 +1,17 @@
 import express from 'express';
-const router = express.Router();
 import DeliveryOrderController from '../controllers/DeliveryOrderController.js';
+import { verifyToken } from '../middlewares/AuthMiddleware.js';
+const router = express.Router();
 
-// PEDIDOS PROPIOS/MANUALES
-router.post('/create', DeliveryOrderController.crearPedido);
 
-// PEDIDOS EXTERNOS (Rappi, Uber Eats, PedidosYa)
-router.post('/create-external', DeliveryOrderController.crearPedidoExterno);
+// Crear pedido propio/manual
+router.post('/create', verifyToken, DeliveryOrderController.crearPedido);
 
-// LISTAR PEDIDOS CONFIRMADOS / PROPIOS
-router.get('/', DeliveryOrderController.listarPedidos);
+// Listar pedidos propios/confirmados
+router.get('/', verifyToken, DeliveryOrderController.listarPedidos);
 
-// LISTAR PEDIDOS EXTERNOS PENDING
-router.get('/external-pending', DeliveryOrderController.listarPedidosExternos);
-
-// CONFIRMAR PEDIDO EXTERNO Y PASAR A PREPARING
-router.patch('/confirm-external/:id', DeliveryOrderController.confirmarPedidoExterno);
-
-// DESPACHAR PEDIDO (CAMBIAR ESTADO A "dispatched")
-router.post('/dispatch/:id', DeliveryOrderController.despacharPedido);
-// GET con query param
-router.get('/filter', DeliveryOrderController.filtrarPorPlataforma);
-
-// POST con body
-router.post('/filter', DeliveryOrderController.filtrarPorPlataforma);
+// Despachar pedido
+router.post('/dispatch/:id', verifyToken, DeliveryOrderController.despacharPedido);
 
 export default router;
 

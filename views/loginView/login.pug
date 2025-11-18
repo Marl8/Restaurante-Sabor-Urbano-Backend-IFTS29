@@ -1,0 +1,26 @@
+extends ../layout
+
+block content
+  .container.mt-5
+    .row.justify-content-center
+      .col-md-4
+        .card.card-login.shadow
+          .card-body
+            h3.text-center Login
+
+            if error
+              .alert.alert-danger= error
+
+            form(method="POST", action="/login")
+
+              .mb-3
+                label.form-label Usuario
+                input.form-control(type="text", name="username", required)
+
+              .mb-3
+                label.form-label Contraseña
+                input.form-control(type="password", name="password", required)
+
+              button.btn.btn-sabor.w-100(type="submit") Ingresar
+
+

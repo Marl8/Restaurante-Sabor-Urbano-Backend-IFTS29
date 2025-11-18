@@ -1,59 +1,63 @@
 extends ../layout
 
-block content 
-    h2.mb-4 Listado de Pedidos
-    
-    a.btn.btn-secondary.mb-3.ms-2(href="/delivery") ← Volver al menú
+block content
+  h2.mb-4 Listado de Pedidos
 
-    if query.success
-        script.
-            if ('!{query.success}' === 'eliminado') {
-                alert('¡Pedido eliminado con éxito!');
-            } else {
-                alert('¡Pedido creado con éxito!');
-            }
-    if query.error
-        .alert.alert-danger Error: !{query.error}
+  a.btn.btn-secondary.mb-3.ms-2(href="/delivery") ← Volver al menú
 
-    if deliveries && deliveries.length
-        table.table.table-striped.table-hover
-            thead.table-dark
-                tr
-                    th #
-                    th ID Cliente
-                    th Nombre Cliente
-                    th Total Ítems
-                    th Estado
-                    th Total ($)
-                    th Repartidor
-                    th Est. Entrega
-                    th Plataforma
-                    th Acciones
-            tbody
-                each delivery in deliveries
-                    tr
-                        td= deliveries.indexOf(delivery) + 1 
-                        td= delivery.customerDisplayId 
-                        td= delivery.customerName 
-                        td= delivery.items.length 
-                        
-                        - var statusText = (delivery.status === 'preparing' ? 'Preparando' : (delivery.status === 'dispatched' ? 'Despachado' : 'Entregado'))
-                        - var statusClass = (delivery.status === 'preparing' ? 'bg-warning' : (delivery.status === 'dispatched' ? 'bg-primary' : 'bg-success'))
-                        td 
-                            span.badge(class=statusClass)= statusText
-                            
-                        td= delivery.total
-                        td= delivery.assignedRiderId || '-'
-                        td= delivery.estimatedDelivery || '-'
-                        td= delivery.plataforma
-                        
-                        td
-                            if query.action === 'edit'
-                                a.btn.btn-sm.btn-primary(href=`/delivery/update?id=${delivery.id}`) Editar
-                            else if query.action === 'delete'
-                                a.btn.btn-sm.btn-danger(href=`/delivery/delete?id=${delivery.id}`) Eliminar
-                            else
-                                a.btn.btn-sm.btn-primary(href=`/delivery/update?id=${delivery.id}`) Editar
-                                a.btn.btn-sm.btn-danger.ms-2(href=`/delivery/delete?id=${delivery.id}`) Eliminar
-    else
-        p.text-muted No hay pedidos registrados aún.
+  if query.success
+    script.
+      if ('!{query.success}' === 'eliminado') {
+        alert('¡Pedido eliminado con éxito!');
+      } else {
+        alert('¡Pedido creado con éxito!');
+      }
+
+  if query.error
+    .alert.alert-danger Error: !{query.error}
+
+  if deliveries && deliveries.length
+    table.table.table-striped.table-hover
+      thead.table-dark
+        tr
+          th #
+          th ID Pedido
+          th ID Cliente
+          th Nombre Cliente
+          th Total Ítems
+          th Estado
+          th Total ($)
+          th Repartidor
+          th Est. Entrega
+          th Plataforma
+          th Acciones
+      tbody
+        each delivery, index in deliveries
+          tr
+            td= index + 1
+            td= delivery._id
+            td= delivery.customerDisplayId
+            td= delivery.customerName
+            td= (delivery.items && delivery.items.length) ? delivery.items.length : 0
+
+            - var statusText = 'Entregado'
+            - if (delivery.status === 'preparing') statusText = 'Preparando'
+            - else if (delivery.status === 'dispatched') statusText = 'Despachado'
+
+            - var statusClass = 'bg-success'
+            - if (delivery.status === 'preparing') statusClass = 'bg-warning'
+            - else if (delivery.status === 'dispatched') statusClass = 'bg-primary'
+
+            td
+              span.badge(class=statusClass)= statusText
+
+            td= delivery.total
+            td= delivery.assignedRiderId || '-'
+            td= delivery.estimatedDelivery || '-'
+            td= delivery.plataforma || '-'
+
+            td
+              a.btn.btn-sm.btn-primary(href=`/delivery/update?id=${delivery._id}`) Editar
+              a.btn.btn-sm.btn-danger.ms-2(href=`/delivery/delete?id=${delivery._id}`) Eliminar
+  else
+    p.text-muted No hay pedidos registrados aún.

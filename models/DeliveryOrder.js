@@ -7,13 +7,20 @@ const deliveryOrderSchema = new mongoose.Schema({
         required: true,
     },
     items: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'MenuItem',
-        required: true,
-    }],
+        menuItem: { 
+            type: mongoose.Schema.Types.ObjectId, 
+            ref: "MenuItem", 
+            required: true },
+        quantity: { 
+                type: Number, 
+                required: true },
+        price: { 
+            type: Number, 
+            required: true }        
+        }],
     status: {
         type: String,
-        enum: ['preparing', 'pending', 'dispatched'], 
+        enum: ["preparing", "pending", "dispatched", "delivered"], 
         default: 'preparing',
         required: true
     },
@@ -24,7 +31,7 @@ const deliveryOrderSchema = new mongoose.Schema({
     },
     estimatedTime: {type: Date, required: false },
     plataforma: {type: String, default: 'Propia'},
-});
+}, { timestamps: true });
 
 const DeliveryOrder = mongoose.model('DeliveryOrder', deliveryOrderSchema);
 
