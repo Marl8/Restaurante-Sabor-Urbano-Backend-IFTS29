@@ -1,6 +1,12 @@
 import express from 'express';
+import { requireLogin, requireRole } from "../middlewares/AuthWeb.js"
 const router = express.Router();
+
 import RiderWebController from '../controllers/RiderWebController.js';
+
+// Proteger TODAS las rutas de customers:
+router.use(requireLogin);
+router.use(requireRole("Admin"));
 
 // ==== Muestra el menú principal de repartidores ==== 
 router.get('/', RiderWebController.showRiderMenu);

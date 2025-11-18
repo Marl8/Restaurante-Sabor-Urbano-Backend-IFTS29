@@ -1,8 +1,11 @@
 import express from "express";
+import { requireLogin, requireRole } from "../middlewares/AuthWeb.js"
 import DeliveryWebController from "../controllers/DeliveryWebController.js";
 const router = express.Router();
 
-
+// Proteger TODAS las rutas de customers (no es ia):
+router.use(requireLogin);
+router.use(requireRole("Admin", "Employee"));
 
 
 router.get("/", DeliveryWebController.showDeliveryMenu); 

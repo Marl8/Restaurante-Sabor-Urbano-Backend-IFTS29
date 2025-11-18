@@ -41,7 +41,7 @@ try {
     query: req.query,
     customer,
     customerId,
-    menuItems,       // datos reales
+    menuItems,       
     error,
     riders,
     ridersMessage,
@@ -74,7 +74,7 @@ try {
         error: `No se encontró ningún cliente con el DNI ${dni}.`,
         customer: null,
         customerId: null,
-        menuItems,   // MongoDB
+        menuItems,   
         oldData: { dni }
     });
     }
@@ -83,7 +83,7 @@ try {
     title: "Agregar Pedido",
     customer,
     customerId: customer._id || customer.id,
-    menuItems,     // MongoDB
+    menuItems,     
     error: null,
     oldData: { dni }
     });
@@ -91,12 +91,12 @@ try {
 } catch (err) {
     console.error("Error al buscar cliente:", err);
 
-    const menuItems = await MenuItem.find().populate('supplies'); // MongoDB
+    const menuItems = await MenuItem.find().populate('supplies'); 
     res.render("deliveryViews/addDelivery", {
     title: "Agregar Pedido",
     customer: null,
     customerId: null,
-    menuItems,     // MongoDB
+    menuItems,     
     error: err.message || "Ocurrió un error al buscar el cliente.",
     oldData: { dni }
     });
@@ -108,13 +108,13 @@ const listDeliveries = async (req, res) => {
 try {
     // Traer todos los pedidos desde MongoDB
     const rawDeliveries = await DeliveryOrder.find()
-    .populate('customerId')        // Datos del cliente
-    .populate('assignedRiderId')   // Datos del repartidor
-    .lean();                       // Devuelve objetos planos
+    .populate('customerId')        
+    .populate('assignedRiderId')  
+    .lean();                       
 
     // Mapear cada pedido con toda la info necesaria
     const deliveries = rawDeliveries.map(d => ({
-    _id: d._id.toString(),  // ID real de Mongo
+    _id: d._id.toString(),  
     customerDisplayId: d.customerId ? d.customerId.dni : '-',
     customerName: d.customerId ? d.customerId.name : 'Cliente no encontrado',
     items: d.items || [],
@@ -126,7 +126,7 @@ try {
     plataforma: d.plataforma || '-'
     }));
 
-    // Renderizar la plantilla Pug con los datos listos
+ 
     res.render('deliveryViews/listDeliveries', {
     title: 'Listado de Pedidos',
     deliveries,
@@ -165,7 +165,7 @@ try {
 
     // Mapear solo lo que el modelo necesita
     const itemsForMongo = itemsArray.map(i => ({
-    menuItem: i.menuItem,  // solo el ObjectId
+    menuItem: i.menuItem,  
     quantity: i.quantity,
     price: i.price
     }));
@@ -259,7 +259,7 @@ try {
     delivery: req.body,
     error: err.message,
     query: req.query,
-    riders: await Rider.find() // si usás dropdown de repartidores
+    riders: await Rider.find() 
     });
 }
 };
