@@ -1,0 +1,36 @@
+extends ../layout
+
+block content
+  h2.mb-4 Eliminar Usuario
+
+  a.btn.btn-secondary.mb-3.ms-2(href="/users") ← Volver al menú
+    
+  if user
+    hr
+    h4 ¿Estás seguro de que querés eliminar a este usuario?
+        
+    table.table.table-striped.table-hover
+      thead.table-dark
+        tr
+          th ID
+          th Nombre
+          th DNI
+          th Email
+          th Username
+      tbody
+        tr
+          td= user.id
+          td= user.name
+          td= user.dni
+          td= user.email
+          td= user.username
+        
+    form(action=`/users/delete/${user.id}?_method=DELETE`, method="POST", style="display:inline")
+      button.btn.btn-danger(type="submit") Sí, eliminar
+      a.btn.btn-secondary.ms-2(href="/users/list") Cancelar
+
+  else if error
+    p.text-danger.mt-4 #{error}
+  
+  else
+    p.text-warning.mt-2 No se especificó o no se encontró el usuario a eliminar.

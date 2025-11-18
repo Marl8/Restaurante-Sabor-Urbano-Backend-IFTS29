@@ -1,0 +1,50 @@
+extends ../layout
+
+block content
+  h2.mb-4 Listado de Usuarios
+  
+  a.btn.btn-secondary.mb-3.ms-2(href="/users") ← Volver al menú
+
+  if users && users.length
+    table.table.table-striped.table-hover
+      thead.table-dark
+        tr
+          th ID
+          th Nombre
+          th DNI
+          th Email
+          th Username
+          th Rol
+          if query.action !== 'edit' && query.action !== 'delete'
+            th Acciones
+          else if query.action === 'edit'
+            th Seleccionar para Editar
+          else if query.action === 'delete'
+            th Seleccionar para Eliminar
+      tbody
+        each user in users
+          tr
+            td= user.id
+            if query.action === 'edit'
+              td 
+                a(href=`/users/update/${user.id}`)= user.name
+            else
+              td= user.name
+              td= user.dni
+              td= user.email
+              td= user.username
+              td= user.rol
+            if query.action !== 'edit' && query.action !== 'delete'
+              td
+                a.btn.btn-sm.btn(style="background-color:#343a40; color:white; border:none;", href=`/users/update/${user.id}`) ✏️
+                form(action=`/users/delete/${user.id}?_method=DELETE`, method="POST", style="display:inline")
+                  button(type="submit", class="btn btn-sm btn-danger ms-2") 🗑️
+            else if query.action === 'edit'
+              td
+                a.btn.btn-sm.btn-primary(href=`/users/update/${user.id}`) Editar este usuario
+            else if query.action === 'delete'
+              td
+                a.btn.btn-sm.btn-danger(href=`/users/delete/${user.id}`) Eliminar este usuario
+  else
+    p.text-muted No hay usuarios registrados aún.
+
