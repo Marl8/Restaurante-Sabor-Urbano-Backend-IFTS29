@@ -11,7 +11,7 @@ const loginWeb = async (req, res) => {
         const result = await UserService.loginUserWEB({ username, password });
 
         if (result.islogin) {
-            req.session.user = result.user; // GUARDAMOS LA SESIÓN
+            req.session.user = result.user; // guarda la sesion (no es ia)
             return res.redirect("/");
         }
 

@@ -1,10 +1,11 @@
 import express from "express";
-import { requireLogin } from "../middlewares/AuthWeb.js"
+import { requireLogin, requireRole } from "../middlewares/AuthWeb.js"
 import SupplyWebController from "../controllers/SupplyWebController.js";
 const router = express.Router();
 
-// Proteger TODAS las rutas de customers:
+// Proteger TODAS las rutas de customers (no ia):
 router.use(requireLogin);
+router.use(requireRole("Admin"));
 
 router.get("/", SupplyWebController.showSupplyMenu); 
 router.post("/save", SupplyWebController.saveSupplyWeb);

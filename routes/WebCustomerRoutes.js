@@ -1,13 +1,14 @@
 import express from 'express';
-import { requireLogin } from "../middlewares/AuthWeb.js";
+import { requireLogin, requireRole } from "../middlewares/AuthWeb.js";
 const router = express.Router();
 
 import { findData } from '../data/db.js';
 import CustomerWebController from '../controllers/CustomerWebController.js';
 
 
-// Proteger TODAS las rutas de customers:
+// Proteger TODAS las rutas de customers (no es ia):
 router.use(requireLogin);
+router.use(requireRole("Admin", "Employee"));
 
 
 router.get('/', (req, res) => {
@@ -17,10 +18,10 @@ router.get('/customers', (req, res) => {
     const db = findData();
     res.render('customersViews/customers', { title: 'Clientes', customers: db.customer, query: req.query });
 });
-// --- ARREGLO CLAVE: Pasamos req.query al render ---
+// ---  req.query al render ---
 router.get('/customers/add', (req, res) => res.render('customersViews/addCustomer', {
     title: 'Agregar Cliente',
-    query: req.query // <--- CORREGIDO
+    query: req.query 
 }));
 router.get('/customers/list', CustomerWebController.listCustomersWeb);
 router.get('/customers/update', CustomerWebController.showCustomerToEdit);
