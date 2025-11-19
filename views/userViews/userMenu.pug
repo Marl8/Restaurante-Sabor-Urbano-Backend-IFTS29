@@ -1,0 +1,30 @@
+extends ../layout 
+
+block content
+  h2.mb-5.text-center Gestión de Usuarios
+
+  a.btn.btn-secondary.mb-3.ms-2(href="/") ← Volver al Menú
+
+  if query.success
+    script.
+      if ('!{query.success}' === 'eliminado') {
+          alert('¡Repartidor eliminado con éxito!');
+      } else {
+          alert('Repartidor guardado con éxito!');
+      }
+  if query.error
+    .alert.alert-danger Error: !{query.error}
+
+  .d-flex.flex-column.align-items-center.g-3
+    a.btn.btn-crud.mb-3.w-50(href="/users/add")
+      i.bi.bi-plus-lg
+      | Agregar User
+    a.btn.btn-crud.mb-3.w-50(href="/users/list")
+      i.bi.bi-clipboard-data
+      | Listar Users
+    a.btn.btn-crud.mb-3.w-50(href="/users/list?action=edit") 
+      i.bi.bi-pencil-fill
+      | Editar User
+    a.btn.btn-crud.mb-3.w-50(href="/users/list?action=delete")
+      i.bi.bi-trash
+      | Eliminar User

@@ -80,10 +80,18 @@ const findUserByDni = async(dni)=>{
 
 const updateUser = async(id, {name, dni, email, username, password, rol})=>{
     try {
-        if(!name || !dni || !email || !username || !password || !rol){
-            return {error: 'Datos incompletos. Se requieren: name, dni, email, username, password, rol'};
+        const fieldsToUpdate = {};
+
+        if (name) fieldsToUpdate.name = name;
+        if (dni) fieldsToUpdate.dni = dni;
+        if (email) fieldsToUpdate.email = email;
+        if (username) fieldsToUpdate.username = username;
+        if (rol) fieldsToUpdate.rol = rol;
+        if (password && password.trim() !== "") {
+        fieldsToUpdate.password = password;
         }
-        const updatedUser = await User.findByIdAndUpdate(id, {name, dni, email, username, password, rol}, 
+
+        const updatedUser = await User.findByIdAndUpdate(id, fieldsToUpdate, 
             {
                 new: true,
             runValidators: true,

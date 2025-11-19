@@ -1,0 +1,36 @@
+extends ../layout
+
+block content
+  h2.mb-4 Editar Usuario
+
+  a.btn.btn-secondary.mb-3.ms-2(href="/users") ← Volver al menú
+  
+  if error
+    .alert.alert-danger #{error}
+
+  if user
+    hr
+    form(method="post" action=`/users/update/${user.id}`)
+      .mb-3
+        label.form-label(for="name") Nombre Completo
+        input.form-control(type="text", name="name", id="name", value=user.name required)
+      .mb-3
+        label.form-label(for="dni") DNI
+        input.form-control(type="text", name="dni", id="dni", value=user.dni required)
+      .mb-3
+        label.form-label(for="email") Email
+        input.form-control(type="email", name="email", id="email", value=user.email required)
+      .mb-3
+        label.form-label(for="username") Nombre de usuario
+        input.form-control(type="text", name="username", id="username", value=user.username required)
+      .mb-3
+        label.form-label(for="rol") Rol
+        select.form-select(name="rol", id="rol", required)
+          option(value="Empleado" selected=user.rol === 'Employee') Empleado
+          option(value="Admin" selected=user.rol === 'Admin') Admin
+      
+      button.btn.btn-success(type="submit") Guardar cambios
+      a.btn.btn-secondary.ms-2(href="/users") Cancelar
+  else
+    p.text-warning No se encontró el usuario para editar.
+

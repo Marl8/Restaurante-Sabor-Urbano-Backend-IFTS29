@@ -14,6 +14,7 @@ import WebRiderRoutes from './routes/WebRiderRoutes.js';
 import WebSupplyRoutes from './routes/WebSupplyRoutes.js';
 import WebMenuItemsRoutes from './routes/WebMenuItemsRoutes.js';
 import UserWebRoutes from "./routes/WebUserRoutes.js";
+import WebAdminUserRoutes from "./routes/WebAdminUserRoutes.js"
 import session from "express-session";
 //import MongoStore from "connect-mongo";
 
@@ -62,6 +63,7 @@ app.use('/delivery', WebDeliveryRoutes);
 app.use('/riders', WebRiderRoutes);
 app.use('/supplies', WebSupplyRoutes);
 app.use('/menuItems', WebMenuItemsRoutes);
+app.use('/users', WebAdminUserRoutes);
 
 app.listen(PORT, ()=>{
     connectDB();
