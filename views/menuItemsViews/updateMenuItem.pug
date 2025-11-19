@@ -34,7 +34,7 @@ block content
           if supplies.length
             select.form-select(name="supplies" id="supplies" multiple)
               each supply in supplies
-                - const isSelected = menuItem.supplies && menuItem.supplies.some(s => s._id.toString() === supply._id.toString());
+                - const isSelected = menuItem.supplies && menuItem.supplies.some(s => s._id === supply._id);
                 option(value=supply._id selected=isSelected)= supply.name
             small.text-muted.mt-1(style="display:block") * Usá Ctrl o Shift para seleccionar varios.
           else

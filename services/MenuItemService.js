@@ -29,7 +29,7 @@ const saveMenuItem = async({name, price, category, stock, supplies})=>{
         if(found){
             throw new Error ('Ya existe un item con este nombre');
         }
-        const {invalidSupplies, validSupplies} = await suppliesValidator(supplies);
+        const {invalidSupplies, validSupplies} = await suppliesValidator(supplies, stock);
         if (invalidSupplies.length > 0) {
             throw new Error(`Algunos suministros no existen en la base de datos o no tienen stock suficiente: ${invalidSupplies.join(', ')}`);
         }
@@ -41,6 +41,7 @@ const saveMenuItem = async({name, price, category, stock, supplies})=>{
                 { $addToSet: { menuItems: saveItem._id } }
             );
         }
+        await updateStockSupplies(saveItem._id, saveItem.stock);
         return saveItem;
     } catch (error) {
         throw new Error(error.message);
@@ -53,7 +54,7 @@ const updateMenuItem = async (id, {name, price, category, stock, supplies})=>{
         if (!id || !name || !price || !category || !stock || !supplies || !Array.isArray(supplies)) {
             return {error:'Datos incompletos. Se requieren: id, name, price, category, stock, supplies'};
         }
-        const {invalidSupplies, validSupplies} = await suppliesValidator(supplies);
+        const {invalidSupplies, validSupplies} = await suppliesValidatorUpdate(supplies);
         if (invalidSupplies.length > 0) {
             return {error:`Algunos suministros no existen en la base de datos: ${invalidSupplies.join(', ')}`};
         }
@@ -63,7 +64,7 @@ const updateMenuItem = async (id, {name, price, category, stock, supplies})=>{
         });
         if(!item){
             return {error:'Item no encontrado'};
-        } 
+        }
         return {menuItem: item, message: 'MenuItem modificado con éxito'};
     } catch (error) {
         throw new Error(error.message);
@@ -71,21 +72,22 @@ const updateMenuItem = async (id, {name, price, category, stock, supplies})=>{
 }    
 
 
-const updateStockSupplies = async (id) => {
+const updateStockSupplies = async (id, cant) => {
     try {
         // Reemplazamos los IDs de los supplies en el MenuItem por los documentos completos para poder actualizar los stocks.
         const itemData = await MenuItem.findById(id).populate('supplies');
         if (!itemData) {
             return {error:'Item no encontrado'};
         }
-        if (itemData.supplies.length > 0) {
+        if (itemData.supplies.length > 0 && cant > 0) {
             for (let supply of itemData.supplies) {
-                if (supply.stock > 0) {
-                    supply.stock = supply.stock - 1;
+                if (supply.stock >= cant) {
+                    supply.stock = supply.stock - cant;
                     await supply.save();
+                }else{
+                    throw new Error(`Stock insuficiente de insumos`);
                 }
             }
-            await itemData.save();
         }
     } catch (error) {
         throw new Error(error.message);
@@ -93,28 +95,32 @@ const updateStockSupplies = async (id) => {
 };
 
 
-const updateStockItem = async (id, stock) => {
+const updateStockItem = async (id, cant) => {
+    
+    if (typeof cant !== "number") {
+        throw new Error("Cantidad inválida");
+    }    
+
     try {
         const itemData = await MenuItem.findById(id).populate('supplies');
         if (!itemData) {
             return {error:'Item no encontrado'};
         }
-        if(stock > itemData.stock){
-            for(let supply of itemData.supplies){
-                if(supply.stock >= 0 || supply.stock ){
-                    throw new Error('Insumos insuficientes.')
+        if (cant > 0) {
+            for (let supply of itemData.supplies) {
+                if (supply.stock < cant) {
+                    throw new Error(`Insumos insuficientes: ${supply.name}`);
                 }
             }
-            updateStockSupplies(saveItem._id);
+            await updateStockSupplies(itemData._id, cant);     
         }
-        itemData.stock = stock;
+        itemData.stock += cant;
         await itemData.save();
         return { item: itemData, message: 'Stock del menú actualizado con éxito'};
     } catch (error) {
         throw new Error(error.message);
     }
 };
-
 
 
 const deleteMenuItem = async (id)=>{
@@ -130,14 +136,14 @@ const deleteMenuItem = async (id)=>{
 };
 
 
-async function suppliesValidator(supplies){
+async function suppliesValidator(supplies, cant){
     const validSupplies = [];
     const invalidSupplies = [];
     
     for (let supplyId of supplies) {
         const supply = await Supply.findById(supplyId.trim()); 
         
-        if (supply && supply.stock > 0) {
+        if (supply && supply.stock >= cant) {
             validSupplies.push(supply._id);
         } else {
             invalidSupplies.push(supplyId);
@@ -145,6 +151,23 @@ async function suppliesValidator(supplies){
     }
     return {invalidSupplies, validSupplies}
 }
+
+async function suppliesValidatorUpdate(supplies){
+    const validSupplies = [];
+    const invalidSupplies = [];
+    
+    for (let supplyId of supplies) {
+        const supply = await Supply.findById(supplyId.trim()); 
+        
+        if (supply) {
+            validSupplies.push(supply._id);
+        } else {
+            invalidSupplies.push(supplyId);
+        }
+    }
+    return {invalidSupplies, validSupplies}
+}
+
 
 const MenuItemService = {
     saveMenuItem,
