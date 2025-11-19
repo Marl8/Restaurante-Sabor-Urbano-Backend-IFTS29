@@ -49,16 +49,16 @@ const saveMenuItem = async({name, price, category, stock, supplies})=>{
 }
 
 
-const updateMenuItem = async (id, {name, price, category, stock, supplies})=>{
+const updateMenuItem = async (id, {name, price, category, supplies})=>{
     try {
-        if (!id || !name || !price || !category || !stock || !supplies || !Array.isArray(supplies)) {
-            return {error:'Datos incompletos. Se requieren: id, name, price, category, stock, supplies'};
+        if (!id || !name || !price || !category || !supplies || !Array.isArray(supplies)) {
+            return {error:'Datos incompletos. Se requieren: id, name, price, category, supplies'};
         }
         const {invalidSupplies, validSupplies} = await suppliesValidatorUpdate(supplies);
         if (invalidSupplies.length > 0) {
             return {error:`Algunos suministros no existen en la base de datos: ${invalidSupplies.join(', ')}`};
         }
-        const item = await MenuItem.findByIdAndUpdate(id, {name, price, category, stock, supplies: validSupplies}, {
+        const item = await MenuItem.findByIdAndUpdate(id, {name, price, category, supplies: validSupplies}, {
             new: true,
             runValidators: true,
         });

@@ -16,5 +16,6 @@ router.get("/update", MenuItemWebController.showMenuItemToEdit);
 router.post("/save", MenuItemWebController.saveMenuItemWeb);
 router.post("/update/:id", MenuItemWebController.updateMenuItemWeb);
 router.post("/delete/:id", MenuItemWebController.deleteMenuItemWeb);
+router.post("/updateStock/:id", MenuItemWebController.updateStockWeb);
 
 export default router;

@@ -27,7 +27,13 @@ block content
 
         .mb-3
           label.form-label(for="stock") Stock disponible
-          input.form-control(type="number" id="stock" name="stock" min="0" required value=menuItem.stock)
+          .d-flex.align-items-center.gap-4.ms-4
+            span#stock.fs-5.ms-2 #{menuItem.stock}
+            button.btn.btn-outline-primary.ms-4(
+              type="button"
+              data-bs-toggle="modal"
+              data-bs-target="#stockModal"
+            ) Modificar stock
 
         .mb-3
           label.form-label(for="supplies") Suministros asociados
@@ -42,3 +48,30 @@ block content
 
         .text-center.mt-4
           button.btn.w-50(style="background-color:#343a40; color:white; border:none;", type="submit") 💾 Guardar Cambios
+      .modal.fade#stockModal(tabindex="-1" aria-labelledby="stockModalLabel" aria-hidden="true")
+        .modal-dialog
+          .modal-content
+            .modal-header
+              h5.modal-title#stockModalLabel Modificar stock
+              button.btn-close(type="button" data-bs-dismiss="modal" aria-label="Close")
+            form(action=`/menuItems/updateStock/${menuItem._id}` method="POST")
+              .modal-body
+                p.mb-2
+                  | Stock actual:
+                  strong  #{menuItem.stock}
+                .mb-3
+                  label.form-label(for="quantity") Cantidad
+                  input.form-control(type="number" id="quantity" name="quantity" min="1" required)
+
+                .mb-3
+                  label.form-label Operación
+                  .form-check
+                    input.form-check-input(type="radio" name="operation" id="opIncrease" value="increase" checked)
+                    label.form-check-label(for="opIncrease") Aumentar stock
+                  .form-check
+                    input.form-check-input(type="radio" name="operation" id="opDecrease" value="decrease")
+                    label.form-check-label(for="opDecrease") Disminuir stock
+
+              .modal-footer
+                button.btn.btn-secondary(type="button" data-bs-dismiss="modal") Cancelar
+                button.btn.btn-primary(type="submit") Guardar cambios

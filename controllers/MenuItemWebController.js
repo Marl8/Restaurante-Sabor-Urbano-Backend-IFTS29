@@ -135,7 +135,7 @@ const showMenuItemToEdit = async (req, res) => {
 const updateMenuItemWeb = async (req, res) => {
   try {
     const { id } = req.params;
-    let { name, price, category, stock, supplies } = req.body;
+    let { name, price, category, supplies } = req.body;
 
     if (!supplies) {
       supplies = [];
@@ -147,7 +147,6 @@ const updateMenuItemWeb = async (req, res) => {
       name,
       price,
       category,
-      stock,
       supplies: suppliesArray,
     });
 
@@ -164,6 +163,48 @@ const updateMenuItemWeb = async (req, res) => {
       menuItem: req.body,
       query: req.query,
     });
+  }
+};
+
+const updateStockWeb = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    let { quantity, operation } = req.body;
+    let cant = Number(quantity);
+
+    if (isNaN(cant) || cant === 0) {
+      throw new Error("La cantidad debe ser un número distinto de cero");
+    }
+
+    if (operation === "decrease") {
+      cant = -cant;
+    }
+
+    const result = await MenuItemService.updateStockItem(id, cant);
+    if (result.error) throw new Error(result.error);
+
+    res.redirect(`/menuItems/update?id=${id}&success=Stock actualizado con éxito`);
+  } catch (error) {
+    console.error("Error al actualizar stock:", error);
+
+    try {
+      const menuItem = await MenuItemService.findMenuItemById(id);
+      const supplies = await Supply.find();
+      res.render("menuItemsViews/updateMenuItem", {
+        title: "Editar Ítem del Menú",
+        menuItem,
+        supplies,
+        error: error.message,
+        query: req.query,
+      });
+    } catch (innerError) {
+      res.status(500).render("errorView", {
+        title: "Error",
+        message: innerError.message,
+        query: req.query,
+      });
+    }
   }
 };
 
@@ -207,6 +248,7 @@ const MenuItemWebController = {
   updateMenuItemWeb,
   showMenuItemToDelete,
   deleteMenuItemWeb,
+  updateStockWeb,
 };
 
 export default MenuItemWebController;
