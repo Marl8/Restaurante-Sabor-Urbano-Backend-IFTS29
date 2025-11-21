@@ -21,3 +21,42 @@ cada pedido y el desempeño de los repartidores.
 
 <img width="810" height="752" alt="Restaurante Sabrores Urbanos" src="https://github.com/user-attachments/assets/85e49bb2-9a36-4fe3-9a15-0c4f4deee1bc" />
 
+### ESTRUCTURA DEL PROYECTO
+
+```text
+├── controllers/ # Gestiona los endpoints
+├── services/ # # Lógica de negocio
+├── routes/ # Rutas API y Web
+├── data/ # conexión a Mongo DB
+├── middlewares/ # Middlewares de autenticación
+├── models/ # Modelos de entidades (Mongo Schemas)
+├── tests/ # Tests de UsuarioServices.
+├── views/ # Vistas web usando Pug
+├── index.js # Punto de entrada
+└── README.md # Documentación
+```
+
+### INSTALACIÓN
+
+1. Clonar el repositorio: git clone 
+2. Instalar dependencias: npm install
+3. Crear un archivo .env con las siguientes variables de entorno:
+- PORT
+- MONGO_URI
+- JWT_SECRET
+- SESSION_SECRET
+
+4. Ejecutar el servidor: node index.js
+
+### DEPENDENCIAS UTILIZADAS
+
+```text
+- Express
+- Pug
+- Mongoose
+- Bcrypt
+- Dotenv
+- Jsonwebtoken
+- Express-session
+- Jest
+```
