@@ -1,7 +1,10 @@
-## Proyecto Restaurante Sabor Urbano
+<h2 align="center"> 🍽️ Proyecto Restaurante Sabor Urbano 🍽️ </h2>
 
-Proyecto realizado en el marco de la cursada de la materia Backend del 2º cuatrmiestre del segundo año de la carrera 
-Tecnicatura en Desarollo de Software impartida por el IFTS Nº29.
+<br>
+
+Proyecto realizado en el marco de la cursada de la materia Backend del 2º cuatrimiestre del segundo año de la carrera 
+Tecnicatura Superior en Desarollo de Software impartida por el IFTS Nº 29.
+
 
 ### Requerimientos y análisis.
 
@@ -60,3 +63,7 @@ cada pedido y el desempeño de los repartidores.
 - Express-session
 - Jest
 ```
+
+### Deploy de la aplicación en Render
+
+https://aplicacionsu.onrender.com/login
