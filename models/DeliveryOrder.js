@@ -22,7 +22,8 @@ const deliveryOrderSchema = new mongoose.Schema({
         type: String,
         enum: ["preparing", "pending", "dispatched", "delivered"], 
         default: 'preparing',
-        required: true
+        required: true,
+        immutable: true
     },
     total: {type: Number, required: true},
     assignedRiderId: {
@@ -30,6 +31,7 @@ const deliveryOrderSchema = new mongoose.Schema({
         ref: 'Rider',
     },
     estimatedTime: {type: Date, required: false },
+    deliveredAt: { type: Date }, 
     plataforma: {type: String, default: 'Propia'},
 }, { timestamps: true });
 

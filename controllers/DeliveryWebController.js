@@ -103,7 +103,7 @@ try {
 }
 };
 
-
+/*
 const listDeliveries = async (req, res) => {
 try {
     // Traer todos los pedidos desde MongoDB
@@ -122,7 +122,6 @@ try {
     totalItems: d.items ? d.items.reduce((sum, it) => sum + it.quantity, 0) : 0,
     status: d.status || 'preparing',
     assignedRiderId: d.assignedRiderId ? d.assignedRiderId.name : '-',
-    estimatedDelivery: d.estimatedTime || '-',
     plataforma: d.plataforma || '-'
     }));
 
@@ -142,8 +141,74 @@ try {
     query: req.query
     });
 }
+};*/
+const listDeliveries = async (req, res) => {
+  try {
+    const rawDeliveries = await DeliveryOrder.find()
+      .populate('customerId')
+      .populate('assignedRiderId')
+      .lean();
+
+    const formatEta = (date) => {
+      if (!date) return "-";
+      return new Date(date).toLocaleTimeString("es-AR", {
+        hour: "2-digit",
+        minute: "2-digit"
+      });
+    };
+
+    const getMinutesRemaining = (date) => {
+      if (!date) return "-";
+      const diffMs = new Date(date) - new Date();
+      if (diffMs <= 0) return "0 min";
+      return Math.ceil(diffMs / 60000) + " min";
+    };
+
+    const isDelayed = (date) => {
+      if (!date) return false;
+      return new Date() > new Date(date);
+    };
+
+    const deliveries = rawDeliveries.map(d => ({
+      _id: d._id.toString(),
+      customerDisplayId: d.customerId ? d.customerId.dni : '-',
+      customerName: d.customerId ? d.customerId.name : 'Cliente no encontrado',
+      items: d.items || [],
+      total: d.items ? d.items.reduce((sum, it) => sum + it.price * it.quantity, 0) : 0,
+      totalItems: d.items ? d.items.reduce((sum, it) => sum + it.quantity, 0) : 0,
+      status: d.status || 'preparing',
+      assignedRiderId: d.assignedRiderId ? d.assignedRiderId.name : '-',
+
+      estimatedDelivery: d.estimatedTime ? formatEta(d.estimatedTime) : "-",
+      remainingTime: d.estimatedTime ? getMinutesRemaining(d.estimatedTime) : "-",
+      deliveredAt: d.deliveredAt ? formatEta(d.deliveredAt) : null,
+
+      delayed: d.estimatedTime ? isDelayed(d.estimatedTime) : false,
+      plataforma: d.plataforma || "-"
+    }));
+
+        res.render("deliveryViews/listDeliveries", { 
+      deliveries,
+      query: req.query || {}
+    });
+
+  } catch (err) {
+    console.error("Error en listDeliveries:", err);
+    res.status(500).send("Error obteniendo pedidos");
+  }
 };
 
+
+// prep base + X min por item
+const calcEstimatedTime = (items) => {
+  const baseMinutes = 10;      
+  const perItemMinutes = 3;   
+
+  const totalItems = (items || []).reduce((sum, it) => sum + (it.quantity || 0), 0);
+  const totalMinutes = baseMinutes + perItemMinutes * totalItems;
+
+  return new Date(Date.now() + totalMinutes * 60000); // Date en servidor
+};
 
 
 
@@ -186,14 +251,26 @@ try {
     }
 
     // Guardar pedido en Mongo
+    let estimatedTime;
+
+    if (estEntrega && Number(estEntrega) > 0) {
+    const minutes = Number(estEntrega);
+    estimatedTime = new Date(Date.now() + minutes * 60000);
+    } else {
+    estimatedTime = calcEstimatedTime(itemsForMongo);
+    }
+
+
     await DeliveryService.crearPedido(
-    verifiedCustomer._id,
-    itemsForMongo,
-    estado,
-    riderId,
-    estEntrega,
-    plataforma
+        verifiedCustomer._id,
+        itemsForMongo,
+        estado,
+        riderId,
+        estimatedTime,   
+        plataforma
     );
+
+
 
     res.redirect("/delivery/list?success=Pedido creado con éxito");
 } catch (error) {
@@ -224,8 +301,17 @@ const showDeliveryToEdit = async (req, res) => {
             }
         }
 
-        // Traer todos los riders para el select
-        riders = await Rider.find().lean();
+        // Riders disponibles
+        riders = await Rider.find({ state: "Disponible" }).lean();
+
+        // Incluir también el asignado aunque esté Ocupado
+        if (delivery?.assignedRiderId) {
+            const currentRider = await Rider.findById(delivery.assignedRiderId._id).lean();
+
+            if (currentRider) {
+                riders.unshift(currentRider);
+            }
+        }
 
         res.render("deliveryViews/updateDelivery", { delivery, riders, query: req.query });
 
@@ -236,33 +322,77 @@ const showDeliveryToEdit = async (req, res) => {
 };
 
 
+
 const updateDeliveryWeb = async (req, res) => {
-try {
-    const { estado, total, repartidor } = req.body;
-    const id = req.params.id;
+    try {
+        const { estado, total, repartidor } = req.body;
+        const id = req.params.id;
 
-    // Buscar pedido
-    const delivery = await DeliveryOrder.findById(id);
-    if (!delivery) throw new Error('Pedido no encontrado');
+        // Buscar pedido actual
+        const delivery = await DeliveryOrder.findById(id);
+        if (!delivery) throw new Error('Pedido no encontrado');
 
-    // Actualizar campos
-    delivery.status = estado || delivery.status;
-    delivery.total = total || delivery.total;
-    delivery.assignedRiderId = repartidor || null;
+        const repartidorAnterior = delivery.assignedRiderId?.toString();
+        const repartidorNuevo = repartidor || null;
 
-    await delivery.save();
+        // Normalizar estado entrante
+        const estadoNormalizado = estado?.trim().toLowerCase();
 
-    res.redirect('/delivery/list?success=Pedido actualizado con éxito');
-} catch (err) {
-    console.error('Error actualizando pedido:', err);
-    res.render('deliveryViews/updateDelivery', {
-    delivery: req.body,
-    error: err.message,
-    query: req.query,
-    riders: await Rider.find() 
-    });
-}
+        // Si tenía repartidor y lo cambiaste → liberar anterior
+        if (repartidorAnterior && repartidorAnterior !== repartidorNuevo) {
+            await Rider.findByIdAndUpdate(repartidorAnterior, { state: "Disponible" });
+        }
+
+        // Si se asignò uno nuevo, marcar como Ocupado
+        if (repartidorNuevo && repartidorNuevo !== repartidorAnterior) {
+            await Rider.findByIdAndUpdate(repartidorNuevo, { state: "Ocupado" });
+        }
+
+  
+        // ACTUALIZAR CAMPOS DEL PEDIDO
+        delivery.total = total || delivery.total;
+        if (estado) {
+            delivery.status = estadoNormalizado;
+        }
+        // Reasignación del repartidor
+        delivery.assignedRiderId = repartidorNuevo;
+
+        // Si se asigna repartidor el pedido pasa a "dispatched"
+        if (repartidorNuevo && delivery.status !== "delivered") {
+            delivery.status = "dispatched";
+        }
+
+        // Si se quita repartidorn volver estado a "pending"
+        if (!repartidorNuevo && repartidorAnterior) {
+            delivery.status = "pending";
+        }
+
+        // Si pasa a delivered → liberar repartidor
+        // Si pasa a delivered → liberar repartidor y guardar hora real
+        if (estadoNormalizado === "delivered") {
+        delivery.deliveredAt = new Date();
+
+        if (repartidorNuevo) {
+        await Rider.findByIdAndUpdate(repartidorNuevo, { state: "Disponible" });}
+        }
+
+        await delivery.save();
+
+        res.redirect('/delivery/list?success=Pedido actualizado con éxito');
+
+    } catch (err) {
+        console.error('Error actualizando pedido:', err);
+
+        res.render('deliveryViews/updateDelivery', {
+            delivery: req.body,
+            error: err.message,
+            query: req.query,
+            riders: await Rider.find()
+        });
+    }
 };
+
+
 
 
 

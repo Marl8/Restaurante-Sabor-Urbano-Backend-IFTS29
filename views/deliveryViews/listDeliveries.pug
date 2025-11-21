@@ -28,9 +28,12 @@ block content
           th Estado
           th Total ($)
           th Repartidor
-          th Est. Entrega
+          th Est. Entrega / Real
+          th Restante
+          th Estado Entrega
           th Plataforma
           th Acciones
+
       tbody
         each delivery, index in deliveries
           tr
@@ -38,8 +41,9 @@ block content
             td= delivery._id
             td= delivery.customerDisplayId
             td= delivery.customerName
-            td= (delivery.items && delivery.items.length) ? delivery.items.length : 0
+            td= delivery.totalItems
 
+            // Estado base (preparando/despachado/entregado)
             - var statusText = 'Entregado'
             - if (delivery.status === 'preparing') statusText = 'Preparando'
             - else if (delivery.status === 'dispatched') statusText = 'Despachado'
@@ -53,11 +57,35 @@ block content
 
             td= delivery.total
             td= delivery.assignedRiderId || '-'
-            td= delivery.estimatedDelivery || '-'
+
+            // ETA o hora real de entrega
+            td
+              if delivery.deliveredAt
+                span.text-success Entregado a las #{delivery.deliveredAt}
+              else
+                = delivery.estimatedDelivery || "-"
+
+            // Tiempo restante
+            td
+              if delivery.deliveredAt
+                span.text-muted N/A
+              else
+                = delivery.remainingTime || "-"
+
+            // Estado de entrega (a tiempo / atrasado / entregado)
+            td
+              if delivery.deliveredAt
+                span.text-success Entregado
+              else if delivery.delayed
+                span.text-danger Atrasado
+              else
+                span.text-primary A tiempo
+
             td= delivery.plataforma || '-'
 
             td
               a.btn.btn-sm.btn-primary(href=`/delivery/update?id=${delivery._id}`) Editar
               a.btn.btn-sm.btn-danger.ms-2(href=`/delivery/delete?id=${delivery._id}`) Eliminar
+
   else
     p.text-muted No hay pedidos registrados aún.

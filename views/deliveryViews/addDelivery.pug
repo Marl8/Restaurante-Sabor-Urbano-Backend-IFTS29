@@ -62,13 +62,6 @@ block content
       input#itemsJson(type="hidden" name="items")
 
       .mb-3
-        label.form-label(for="estado") Estado
-        select.form-select(name="estado" required)
-          option(value="preparing" selected) Preparando
-          option(value="dispatched") Despachado
-          option(value="delivered") Entregado
-
-      .mb-3
         label.form-label(for="repartidor") Repartidor (opcional)
         if riders && riders.length
           select.form-select(name="repartidor")
@@ -77,10 +70,6 @@ block content
               option(value=r._id)= r.name
         else
           input.form-control(type="text" disabled placeholder="Sin repartidores registrados")
-
-      .mb-3
-        label.form-label(for="estEntrega") Estimado de Entrega (Minutos)
-        input.form-control(type="number" name="estEntrega" placeholder="Ej: 30")
 
       .mb-3
         label.form-label(for="plataforma") Plataforma
