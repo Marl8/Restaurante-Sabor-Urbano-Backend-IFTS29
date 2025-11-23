@@ -10,7 +10,6 @@ const DeliveryService = {
       status: "preparing",
       total,
       assignedRiderId,
-      //estimatedTime: estimatedTime ? new Date(Date.now() + estimatedTime * 60000) : null,
       estimatedTime,
       plataforma
     });

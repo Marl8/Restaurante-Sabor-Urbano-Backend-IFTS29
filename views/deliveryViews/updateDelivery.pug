@@ -19,7 +19,7 @@ block content
         hr
         h3.mb-3 Pedido ID: #{delivery._id}
         
-        form(method="post" action=`/delivery/update/${delivery._id}`)
+        form(method="post" action=`/delivery/update/${delivery._id}?_method=PUT`)
             
             .mb-3
                 label.form-label Cliente

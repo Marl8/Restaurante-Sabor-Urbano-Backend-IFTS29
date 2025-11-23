@@ -66,7 +66,7 @@ try {
     if (!dni || dni.trim() === "") throw new Error("Debe ingresar un DNI válido.");
 
     const customer = await CustomerService.findCustomerByDni(dni);
-    const menuItems = await MenuItem.find().populate('supplies'); // MongoDB
+    const menuItems = await MenuItem.find().populate('supplies'); 
 
     if (!customer) {
     return res.render("deliveryViews/addDelivery", {
@@ -103,180 +103,142 @@ try {
 }
 };
 
-/*
 const listDeliveries = async (req, res) => {
-try {
-    // Traer todos los pedidos desde MongoDB
-    const rawDeliveries = await DeliveryOrder.find()
-    .populate('customerId')        
-    .populate('assignedRiderId')  
-    .lean();                       
+    try {
+        const rawDeliveries = await DeliveryOrder.find()
+        .populate('customerId')
+        .populate('assignedRiderId')
+        .lean();
 
-    // Mapear cada pedido con toda la info necesaria
-    const deliveries = rawDeliveries.map(d => ({
-    _id: d._id.toString(),  
-    customerDisplayId: d.customerId ? d.customerId.dni : '-',
-    customerName: d.customerId ? d.customerId.name : 'Cliente no encontrado',
-    items: d.items || [],
-    total: d.items ? d.items.reduce((sum, it) => sum + it.price * it.quantity, 0) : 0,
-    totalItems: d.items ? d.items.reduce((sum, it) => sum + it.quantity, 0) : 0,
-    status: d.status || 'preparing',
-    assignedRiderId: d.assignedRiderId ? d.assignedRiderId.name : '-',
-    plataforma: d.plataforma || '-'
-    }));
+        const formatEta = (date) => {
+            if (!date) return "-";
+            return new Date(date).toLocaleTimeString("es-AR", {
+                hour: "2-digit",
+                minute: "2-digit"
+            });
+        };
 
- 
-    res.render('deliveryViews/listDeliveries', {
-    title: 'Listado de Pedidos',
-    deliveries,
-    query: req.query
-    });
+        const getMinutesRemaining = (date) => {
+            if (!date) return "-";
+            const diffMs = new Date(date) - new Date();
+            if (diffMs <= 0) return "0 min";
+            return Math.ceil(diffMs / 60000) + " min";
+        };
 
-} catch (err) {
-    console.error("Error en listDeliveries:", err);
-    res.render('deliveryViews/listDeliveries', {
-    title: 'Listado de Pedidos',
-    deliveries: [],
-    error: "Error al cargar los pedidos",
-    query: req.query
-    });
-}
-};*/
-const listDeliveries = async (req, res) => {
-  try {
-    const rawDeliveries = await DeliveryOrder.find()
-      .populate('customerId')
-      .populate('assignedRiderId')
-      .lean();
+        const isDelayed = (delivery) => {
+            if (!delivery.estimatedTime) return false;
 
-    const formatEta = (date) => {
-      if (!date) return "-";
-      return new Date(date).toLocaleTimeString("es-AR", {
-        hour: "2-digit",
-        minute: "2-digit"
-      });
+            if (delivery.status === 'delivered') return false;
+            
+            const now = new Date();
+            const estimated = new Date(delivery.estimatedTime);
+            return now > estimated;
+        };
+
+        const deliveries = rawDeliveries.map(d => {
+            const delayed = isDelayed(d);
+            
+            return {
+                _id: d._id.toString(),
+                customerDisplayId: d.customerId ? d.customerId.dni : '-',
+                customerName: d.customerId ? d.customerId.name : 'Cliente no encontrado',
+                items: d.items || [],
+                total: d.items ? d.items.reduce((sum, it) => sum + it.price * it.quantity, 0) : 0,
+                totalItems: d.items ? d.items.reduce((sum, it) => sum + it.quantity, 0) : 0,
+                status: d.status || 'preparing',
+                assignedRiderId: d.assignedRiderId ? d.assignedRiderId.name : '-',
+                estimatedDelivery: d.estimatedTime ? formatEta(d.estimatedTime) : "-",
+                remainingTime: d.estimatedTime ? getMinutesRemaining(d.estimatedTime) : "-",
+                deliveredAt: d.deliveredAt ? formatEta(d.deliveredAt) : null,
+                delayed: delayed,
+                plataforma: d.plataforma || "-"
+            };
+        });
+            res.render("deliveryViews/listDeliveries", { 
+                deliveries,
+                query: req.query || {}
+            });
+    } catch (err) {
+        console.error("Error en listDeliveries:", err);
+        res.status(500).send("Error obteniendo pedidos");
+    }
     };
-
-    const getMinutesRemaining = (date) => {
-      if (!date) return "-";
-      const diffMs = new Date(date) - new Date();
-      if (diffMs <= 0) return "0 min";
-      return Math.ceil(diffMs / 60000) + " min";
-    };
-
-    const isDelayed = (date) => {
-      if (!date) return false;
-      return new Date() > new Date(date);
-    };
-
-    const deliveries = rawDeliveries.map(d => ({
-      _id: d._id.toString(),
-      customerDisplayId: d.customerId ? d.customerId.dni : '-',
-      customerName: d.customerId ? d.customerId.name : 'Cliente no encontrado',
-      items: d.items || [],
-      total: d.items ? d.items.reduce((sum, it) => sum + it.price * it.quantity, 0) : 0,
-      totalItems: d.items ? d.items.reduce((sum, it) => sum + it.quantity, 0) : 0,
-      status: d.status || 'preparing',
-      assignedRiderId: d.assignedRiderId ? d.assignedRiderId.name : '-',
-
-      estimatedDelivery: d.estimatedTime ? formatEta(d.estimatedTime) : "-",
-      remainingTime: d.estimatedTime ? getMinutesRemaining(d.estimatedTime) : "-",
-      deliveredAt: d.deliveredAt ? formatEta(d.deliveredAt) : null,
-
-      delayed: d.estimatedTime ? isDelayed(d.estimatedTime) : false,
-      plataforma: d.plataforma || "-"
-    }));
-
-        res.render("deliveryViews/listDeliveries", { 
-      deliveries,
-      query: req.query || {}
-    });
-
-  } catch (err) {
-    console.error("Error en listDeliveries:", err);
-    res.status(500).send("Error obteniendo pedidos");
-  }
-};
 
 
 // prep base + X min por item
 const calcEstimatedTime = (items) => {
-  const baseMinutes = 10;      
-  const perItemMinutes = 3;   
+    const baseMinutes = 10;      
+    const perItemMinutes = 3;   
 
-  const totalItems = (items || []).reduce((sum, it) => sum + (it.quantity || 0), 0);
-  const totalMinutes = baseMinutes + perItemMinutes * totalItems;
+    const totalItems = (items || []).reduce((sum, it) => sum + (it.quantity || 0), 0);
+    const totalMinutes = baseMinutes + perItemMinutes * totalItems;
 
-  return new Date(Date.now() + totalMinutes * 60000); // Date en servidor
+    return new Date(Date.now() + totalMinutes * 60000); 
+
 };
 
 
 
 const saveDeliveryWeb = async (req, res) => {
-try {
-    const { customerId, items, estado, repartidor, estEntrega, plataforma } = req.body;
+    try {
+        const { customerId, items, estado, repartidor, estEntrega, plataforma } = req.body;
 
-    // Validar cliente
-    const verifiedCustomer = await CustomerService.findCustomerById(customerId);
-    if (!verifiedCustomer) throw new Error("Cliente no encontrado");
+        const verifiedCustomer = await CustomerService.findCustomerById(customerId);
+        if (!verifiedCustomer) throw new Error("Cliente no encontrado");
 
-    // Parsear items del JSON
-    let itemsArray = [];
-    if (typeof items === "string" && items.trim() !== "") {
-    itemsArray = JSON.parse(items);
+        // Parsear items del JSON
+        let itemsArray = [];
+        if (typeof items === "string" && items.trim() !== "") {
+        itemsArray = JSON.parse(items);
+        }
+
+        if (!itemsArray.length) throw new Error("Debe agregar al menos un ítem");
+
+        // Mapear solo lo que el modelo necesita
+        const itemsForMongo = itemsArray.map(i => ({
+        menuItem: i.menuItem,  
+        quantity: i.quantity,
+        price: i.price
+        }));
+
+        // Calcular total
+        const total = itemsForMongo.reduce((sum, i) => sum + i.price * i.quantity, 0);
+
+        // Rider opcional
+        const riderId = repartidor && repartidor.trim() !== "" ? repartidor : null;
+
+        // Descontar stock en la base de datos
+        for (const it of itemsForMongo) {
+        const menuItemDoc = await MenuItem.findById(it.menuItem);
+        if (!menuItemDoc) throw new Error(`Item con ID ${it.menuItem} no encontrado`);
+        if (menuItemDoc.stock < it.quantity) throw new Error(`Stock insuficiente para ${menuItemDoc.name}`);
+        menuItemDoc.stock -= it.quantity;
+        await menuItemDoc.save();
+        }
+
+        // Guardar pedido en Mongo
+        let estimatedTime;
+
+        if (estEntrega && Number(estEntrega) > 0) {
+            const minutes = Number(estEntrega);
+            estimatedTime = new Date(Date.now() + minutes * 60000);
+        } else {
+            estimatedTime = calcEstimatedTime(itemsForMongo);
+        }
+
+        await DeliveryService.crearPedido(
+            verifiedCustomer._id,
+            itemsForMongo,
+            estado,
+            riderId,
+            estimatedTime,   
+            plataforma
+        );
+        res.redirect("/delivery/list?success=Pedido creado con éxito");
+    } catch (error) {
+        const errorMessage = encodeURIComponent(error.message);
+        res.redirect(`/delivery/add?customerId=${req.body.customerId}&error=${errorMessage}`);
     }
-
-    if (!itemsArray.length) throw new Error("Debe agregar al menos un ítem");
-
-    // Mapear solo lo que el modelo necesita
-    const itemsForMongo = itemsArray.map(i => ({
-    menuItem: i.menuItem,  
-    quantity: i.quantity,
-    price: i.price
-    }));
-
-    // Calcular total
-    const total = itemsForMongo.reduce((sum, i) => sum + i.price * i.quantity, 0);
-
-    // Rider opcional
-    const riderId = repartidor && repartidor.trim() !== "" ? repartidor : null;
-
-    // Descontar stock en la base de datos
-    for (const it of itemsForMongo) {
-    const menuItemDoc = await MenuItem.findById(it.menuItem);
-    if (!menuItemDoc) throw new Error(`Item con ID ${it.menuItem} no encontrado`);
-    if (menuItemDoc.stock < it.quantity) throw new Error(`Stock insuficiente para ${menuItemDoc.name}`);
-    menuItemDoc.stock -= it.quantity;
-    await menuItemDoc.save();
-    }
-
-    // Guardar pedido en Mongo
-    let estimatedTime;
-
-    if (estEntrega && Number(estEntrega) > 0) {
-    const minutes = Number(estEntrega);
-    estimatedTime = new Date(Date.now() + minutes * 60000);
-    } else {
-    estimatedTime = calcEstimatedTime(itemsForMongo);
-    }
-
-
-    await DeliveryService.crearPedido(
-        verifiedCustomer._id,
-        itemsForMongo,
-        estado,
-        riderId,
-        estimatedTime,   
-        plataforma
-    );
-
-
-
-    res.redirect("/delivery/list?success=Pedido creado con éxito");
-} catch (error) {
-    const errorMessage = encodeURIComponent(error.message);
-    res.redirect(`/delivery/add?customerId=${req.body.customerId}&error=${errorMessage}`);
-}
 };
 
 
@@ -348,7 +310,6 @@ const updateDeliveryWeb = async (req, res) => {
             await Rider.findByIdAndUpdate(repartidorNuevo, { state: "Ocupado" });
         }
 
-  
         // ACTUALIZAR CAMPOS DEL PEDIDO
         delivery.total = total || delivery.total;
         if (estado) {
@@ -362,7 +323,7 @@ const updateDeliveryWeb = async (req, res) => {
             delivery.status = "dispatched";
         }
 
-        // Si se quita repartidorn volver estado a "pending"
+        // Si se quita repartidor volver estado a "pending"
         if (!repartidorNuevo && repartidorAnterior) {
             delivery.status = "pending";
         }
@@ -373,9 +334,14 @@ const updateDeliveryWeb = async (req, res) => {
         delivery.deliveredAt = new Date();
 
         if (repartidorNuevo) {
-        await Rider.findByIdAndUpdate(repartidorNuevo, { state: "Disponible" });}
+            await Rider.findByIdAndUpdate(repartidorNuevo, { state: "Disponible" });}
         }
-
+        
+        if(repartidor){
+            delivery.status = 'dispatched';
+            console.log('Status: ', delivery.status);
+            
+        }
         await delivery.save();
 
         res.redirect('/delivery/list?success=Pedido actualizado con éxito');
@@ -391,10 +357,6 @@ const updateDeliveryWeb = async (req, res) => {
         });
     }
 };
-
-
-
-
 
 
 const showDeliveryToDelete = async (req, res) => { 

@@ -20,18 +20,6 @@ export const requireEmployee = (req, res, next) => {
   next();
 };
 
-/*
-
-// Middleware flexible: recibe una lista de roles (no es ia)
-export const requireRole = (...roles) => {
-  return (req, res, next) => {
-    if (!req.session.user || !roles.includes(req.session.user.rol)) {
-      return res.status(403).send("Acceso denegado");
-    }
-    next();
-  };
-};*/
-
 export const requireRole = (...roles) => {
   return (req, res, next) => {
     if (!req.session.user) {
