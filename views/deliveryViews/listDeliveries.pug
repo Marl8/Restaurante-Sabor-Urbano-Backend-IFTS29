@@ -47,10 +47,12 @@ block content
             - var statusText = 'Entregado'
             - if (delivery.status === 'preparing') statusText = 'Preparando'
             - else if (delivery.status === 'dispatched') statusText = 'Despachado'
+            - else if (delivery.status === 'pending') statusText = 'Pendiente'
 
             - var statusClass = 'bg-success'
             - if (delivery.status === 'preparing') statusClass = 'bg-warning'
             - else if (delivery.status === 'dispatched') statusClass = 'bg-primary'
+            - else if (delivery.status === 'pending') statusClass = 'bg-info'
 
             td
               span.badge(class=statusClass)= statusText
