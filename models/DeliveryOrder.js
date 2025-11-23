@@ -23,7 +23,7 @@ const deliveryOrderSchema = new mongoose.Schema({
         enum: ["preparing", "pending", "dispatched", "delivered"], 
         default: 'preparing',
         required: true,
-        immutable: true
+        //immutable: true
     },
     total: {type: Number, required: true},
     assignedRiderId: {
