@@ -288,64 +288,47 @@ const showDeliveryToEdit = async (req, res) => {
 const updateDeliveryWeb = async (req, res) => {
     try {
         const { estado, total, repartidor } = req.body;
+        console.log('Repartidor: ',repartidor);
+        
         const id = req.params.id;
 
-        // Buscar pedido actual
         const delivery = await DeliveryOrder.findById(id);
         if (!delivery) throw new Error('Pedido no encontrado');
 
         const repartidorAnterior = delivery.assignedRiderId?.toString();
         const repartidorNuevo = repartidor || null;
 
-        // Normalizar estado entrante
-        const estadoNormalizado = estado?.trim().toLowerCase();
+        const estadoNormalizado = estado?.trim().toLowerCase() || delivery.status;
 
-        // Si tenía repartidor y lo cambiaste → liberar anterior
         if (repartidorAnterior && repartidorAnterior !== repartidorNuevo) {
             await Rider.findByIdAndUpdate(repartidorAnterior, { state: "Disponible" });
         }
 
-        // Si se asignò uno nuevo, marcar como Ocupado
         if (repartidorNuevo && repartidorNuevo !== repartidorAnterior) {
             await Rider.findByIdAndUpdate(repartidorNuevo, { state: "Ocupado" });
         }
 
-        // ACTUALIZAR CAMPOS DEL PEDIDO
+        let nuevoEstado = estadoNormalizado;
+
+        if (!repartidorNuevo) {
+            nuevoEstado = "pending";
+        }else if (repartidorNuevo && estadoNormalizado !== "delivered") {
+            nuevoEstado = "dispatched";
+        }else if (estadoNormalizado === "delivered" && repartidorNuevo) {
+            nuevoEstado = "delivered";
+            delivery.deliveredAt = new Date();
+        }else{
+            nuevoEstado = "pending";
+        }
+
         delivery.total = total || delivery.total;
-        if (estado) {
-            delivery.status = estadoNormalizado;
-        }
-        // Reasignación del repartidor
         delivery.assignedRiderId = repartidorNuevo;
+        delivery.status = nuevoEstado;
 
-        // Si se asigna repartidor el pedido pasa a "dispatched"
-        if (repartidorNuevo && delivery.status !== "delivered") {
-            delivery.status = "dispatched";
-        }
-
-        // Si se quita repartidor volver estado a "pending"
-        if (!repartidorNuevo && repartidorAnterior) {
-            delivery.status = "pending";
-        }
-
-        // Si pasa a delivered → liberar repartidor
-        // Si pasa a delivered → liberar repartidor y guardar hora real
-        if (estadoNormalizado === "delivered") {
-        delivery.deliveredAt = new Date();
-
-        if (repartidorNuevo) {
-            await Rider.findByIdAndUpdate(repartidorNuevo, { state: "Disponible" });}
-        }
-        
-        if(repartidor){
-            delivery.status = 'dispatched';
-            console.log('Status: ', delivery.status);
-        }
-        await DeliveryOrder.findByIdAndUpdate(
-            delivery._id,
-            { $set: delivery },
-            { new: true, runValidators: true }
-        );
+        await DeliveryOrder.findByIdAndUpdate(delivery._id, delivery, {
+            new: true,
+            runValidators: true
+        });
 
         res.redirect('/delivery/list?success=Pedido actualizado con éxito');
 
@@ -360,7 +343,6 @@ const updateDeliveryWeb = async (req, res) => {
         });
     }
 };
-
 
 const showDeliveryToDelete = async (req, res) => { 
     const idToFind = req.query.id;
