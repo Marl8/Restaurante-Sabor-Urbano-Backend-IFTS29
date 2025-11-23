@@ -288,8 +288,6 @@ const showDeliveryToEdit = async (req, res) => {
 const updateDeliveryWeb = async (req, res) => {
     try {
         const { estado, total, repartidor } = req.body;
-        console.log('Repartidor: ',repartidor);
-        
         const id = req.params.id;
 
         const delivery = await DeliveryOrder.findById(id);
@@ -309,12 +307,12 @@ const updateDeliveryWeb = async (req, res) => {
         }
 
         let nuevoEstado = estadoNormalizado;
-
+        
         if (!repartidorNuevo) {
             nuevoEstado = "pending";
         }else if (repartidorNuevo && estadoNormalizado !== "delivered") {
             nuevoEstado = "dispatched";
-        }else if (estadoNormalizado === "delivered" && repartidorNuevo) {
+        }else if (estadoNormalizado === "delivered") {
             nuevoEstado = "delivered";
             delivery.deliveredAt = new Date();
         }else{
@@ -324,6 +322,11 @@ const updateDeliveryWeb = async (req, res) => {
         delivery.total = total || delivery.total;
         delivery.assignedRiderId = repartidorNuevo;
         delivery.status = nuevoEstado;
+        if(delivery.status === "delivered" && repartidorAnterior){
+            await Rider.findByIdAndUpdate(repartidorAnterior, { state: "Disponible" });
+        }else if(delivery.status === "delivered" && repartidorNuevo){
+            await Rider.findByIdAndUpdate(repartidorNuevo, { state: "Disponible" });
+        }
 
         await DeliveryOrder.findByIdAndUpdate(delivery._id, delivery, {
             new: true,
