@@ -340,9 +340,12 @@ const updateDeliveryWeb = async (req, res) => {
         if(repartidor){
             delivery.status = 'dispatched';
             console.log('Status: ', delivery.status);
-            
         }
-        await delivery.save();
+        await DeliveryOrder.findByIdAndUpdate(
+            delivery._id,
+            { $set: delivery },
+            { new: true, runValidators: true }
+        );
 
         res.redirect('/delivery/list?success=Pedido actualizado con éxito');
 
